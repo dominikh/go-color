@@ -157,9 +157,9 @@ func (cs *ColorSpace) InGamut(values [3]float64) bool {
 	return true
 }
 
-func (space *ColorSpace) Convert(ospace *ColorSpace, coords [3]float64) [3]float64 {
-	ourPath := space.path
-	theirPath := ospace.path
+func (cs *ColorSpace) Convert(to *ColorSpace, coords [3]float64) [3]float64 {
+	ourPath := cs.path
+	theirPath := to.path
 
 	// Determine the connection space by finding the lowest common ancestor of
 	// the source and destination spaces in the color space tree.
@@ -174,7 +174,7 @@ func (space *ColorSpace) Convert(ospace *ColorSpace, coords [3]float64) [3]float
 	if connIdx == -1 {
 		// Every space should be connectable through XYZ.
 		panic(fmt.Sprintf("internal error: couldn't find connection space for %s and %s",
-			space.Name, ospace.Name))
+			cs.Name, to.Name))
 	}
 
 	// Convert from our space to the connection space
