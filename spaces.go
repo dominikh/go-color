@@ -192,8 +192,14 @@ func (space *ColorSpace) Convert(ospace *ColorSpace, coords [3]float64) [3]float
 // NewXYZSpace returns a new CIE XYZ color space with the specified name, ID, and
 // white point.
 func NewXYZSpace(name, id string, white *Chromaticity) *ColorSpace {
-	toD65 := Bradford.Matrix(white, WhitesSRGBD65)
-	fromD65 := Bradford.Matrix(WhitesSRGBD65, white)
+	// OPT(dh): because all white point conversions go through D65, converting
+	// between two non-D65 white points uses two instead of one matrix. For
+	// example, we'd do D50->D65->D75, instead of the more direct D50->D75. This
+	// is slower, and introduces more floating point error.
+	//
+	// In practice, most color spaces use D65 or D50, anyway.
+	toD65 := Bradford.Matrix(white, XYZ_D65.White)
+	fromD65 := Bradford.Matrix(XYZ_D65.White, white)
 	return (&ColorSpace{
 		ID:    id,
 		Name:  name,
@@ -271,7 +277,6 @@ var LinearSRGB = newRGBColorSpace(
 type rgbColorSpace struct {
 	ID       string
 	Name     string
-	White    *Chromaticity
 	Base     *ColorSpace
 	ToBase   [3][3]float64
 	FromBase [3][3]float64
@@ -284,10 +289,10 @@ func newRGBColorSpace(space *rgbColorSpace) *ColorSpace {
 		Coords: RGBCoordinates,
 		Base:   space.Base,
 		ToBase: func(c *[3]float64) [3]float64 {
-			return rgbToXYZ(space.White, space.Base.White, c, &space.ToBase)
+			return mulVecMat(c, &space.ToBase)
 		},
 		FromBase: func(c *[3]float64) [3]float64 {
-			return xyzToRGB(space.Base.White, space.White, c, &space.FromBase)
+			return mulVecMat(c, &space.FromBase)
 		},
 	}).Init()
 }
@@ -584,20 +589,6 @@ var ProPhoto = (&ColorSpace{
 		}
 	},
 }).Init()
-
-func rgbToXYZ(white, baseWhite *Chromaticity, c *[3]float64, m *[3][3]float64) [3]float64 {
-	xyz := mulVecMat(c, m)
-	if white != baseWhite {
-		xyz = Bradford.Adapt(&xyz, white, baseWhite)
-	}
-	return xyz
-}
-
-func xyzToRGB(white, baseWhite *Chromaticity, c *[3]float64, m *[3][3]float64) [3]float64 {
-	c_ := Bradford.Adapt(c, baseWhite, white)
-	rgb := mulVecMat(&c_, m)
-	return rgb
-}
 
 func mulVecMat(vec *[3]float64, m *[3][3]float64) [3]float64 {
 	return [3]float64{
