@@ -48,7 +48,7 @@
 //
 //	veryPink := MakeColor(Oklch, 0.65, 0.29, 0, 1)
 //	veryPinkSRGB := veryPink.Convert(SRGB)
-//	pinkSRGB := GamutMapCSS(&veryPink, color.SRGB)
+//	pinkSRGB := GamutMapCSS(&veryPink, SRGB)
 //
 //	fmt.Println(veryPink, veryPink.InGamut())
 //	fmt.Println(veryPinkSRGB, veryPinkSRGB.InGamut())
