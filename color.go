@@ -2,11 +2,124 @@
 // specific white points used in the CSS Color Module Level 4 spec. tl;dr: there
 // are a dozen different definitions of D65, we have to pick one. Same for D50.
 
-// Useful other color libraries:
+// Useful links:
 // - https://facelessuser.github.io/coloraide/
 // - https://colorjs.io/
+// - https://www.w3.org/TR/css-color-4
 
 // Package color provides types and functions for working with colors.
+//
+// # Color
+//
+// The core type is [Color], a color space-aware type for representing colors in
+// any 3-axis coordinate system. For example, one color may be represented in a
+// cartesian sRGB color space, while another is represented in the cylindrical
+// Oklch. Colors can be instantiated directly or be created with the [MakeColor]
+// helper. Additionally, the CSS 'color()' syntax is supported and can be parsed
+// by [ParseColor]. The package provides numerous color spaces, as variables of
+// type [ColorSpace].
+//
+// Colors can be freely converted between any two color spaces, with optional
+// gamut mapping. To convert a Color without gamut mapping, use [Color.Convert].
+// If the destination color space is narrower than the source space (for
+// example, when converting from Display P3 to sRGB), the new Color might not be
+// in gamut and have values outside the expected range. Package color does not
+// apply gamut mapping automatically for two reasons:
+//
+//  1. No gamut mapping approach is perfect and we leave the choice of which
+//     algorithm to use up to the user.
+//
+//  2. Automatic gamut mapping would prevent colors from being roundtrippable.
+//     Without gamut mapping, it is possible to go from a wider to a narrower and
+//     back to a wider color space without losing information (except for the
+//     introduction of rounding errors).
+//
+// A decent gamut mapping operation with a relative colorimetric intent is
+// implemented by [GamutMapCSS]. This is the same algorithm that is used by
+// browsers that implement the [CSS Color Module Level 4] standard.
+//
+// Whether a color is in gamut for its color space can be checked with
+// [Color.InGamut]. There is also [Color.InGamutOf] that checks if a color, when
+// converted to a target color space, will be in gamut.
+//
+// The following example shows the creation of a very saturated pink (more
+// saturated than can be displayed by non-wide-gamut displays) using Oklch and
+// its conversion to sRGB with and without gamut mapping.
+//
+//	veryPink := MakeColor(Oklch, 0.65, 0.29, 0, 1)
+//	veryPinkSRGB := veryPink.Convert(SRGB)
+//	pinkSRGB := GamutMapCSS(&veryPink, color.SRGB)
+//
+//	fmt.Println(veryPink, veryPink.InGamut())
+//	fmt.Println(veryPinkSRGB, veryPinkSRGB.InGamut())
+//	fmt.Println(pinkSRGB, pinkSRGB.InGamut())
+//
+// Output:
+//
+//	color(--oklch 0.650000 0.290000 0.000000) true
+//	color(srgb 1.040595 -0.191616 0.533106) false
+//	color(srgb 1.000000 0.000000 0.533824) true
+//
+// This is everything that is needed to create and use colors. The following
+// sections describe more advanced but optional functionality.
+//
+// # Color spaces
+//
+// Without an associated color space, a triple like (0.6, 0.2, 0) conveys no
+// meaning. It might represent a brown color in sRGB (when representing values
+// as floating point values in the range [0, 1]), or a soft pink in Oklch.
+//
+// Package color supports numerous color spaces and allows users to define their
+// own. They are represented by the [ColorSpace] type. Color spaces include meta
+// data such as an ID (for the use with [ParseColor]) and name as well as a
+// [white point]. However, their main functionality is provided by having a
+// "base" color space to and from which a color space can be converted. The base
+// space might be closely related, such as sRGB being based on linear sRGB (as
+// the former is just the latter with a transfer function applied). It might
+// also be a more fundamental color space, often XYZ with the appropriate white
+// point. Together, all color spaces form a tree, with XYZ D65 as the root. This
+// tree allows converting between any two color spaces by finding a common
+// ancestor (the conversion space) and applying a series of conversions from the
+// source space to the conversion space and from the conversion space to the
+// target space.
+//
+// # Chromatic adaptation
+//
+// Different color spaces may have different white points, requiring [chromatic
+// adaptation] when converting between them. This is automatically handled
+// during color space conversion. Every color space's chain of base spaces will
+// eventually lead to an XYZ color space with the appropriate white point. When
+// converting between two XYZ color spaces with different white points, we use
+// the Bradford method to adapt between them.
+//
+// It is also possible to manually apply chromatic adaptation using the [CAT]
+// type. This package provides the [Bradford] and [CAT16] transformations, but
+// any transformation that is based on using a 3x3 matrix to map to a cone
+// response and another 3x3 matrix to map from a cone response can be
+// implemented using [CAT].
+//
+// Furthermore, we provide definitions for numerous white points, expressed as
+// xy chromaticities using the [Chromaticity] type. Additionally, CIE daylight
+// illuminants can be created with [MakeCIEDaylightIlluminant].
+//
+// New XYZ spaces with custom white points can be created with [NewXYZSpace].
+//
+// # Other functionality
+//
+// The perceptual difference between two colors can be computed by functions
+// whose names start with "Delta", such as [DeltaEOK2]. Different functions have
+// different tradeoffs.
+//
+// The contrast of two colors can be computed by functions whose names start
+// with "Contrast", such as [ContrastWeber]. Different functions have different
+// tradeoffs.
+//
+// [Step] creates color gradients by linearly interpolating between two colors
+// in a color space of your choice.
+//
+// [CSS Color Module Level 4]: https://www.w3.org/TR/css-color-4/
+// [white point]: https://en.wikipedia.org/wiki/White_point
+// [chromatic adaptation]: https://en.wikipedia.org/wiki/Chromatic_adaptation
 package color
 
 // TODO(dh): https://github.com/WICG/color-api/issues/30
