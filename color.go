@@ -14,10 +14,10 @@
 // The core type is [Color], a color space-aware type for representing colors in
 // any 3-axis coordinate system. For example, one color may be represented in a
 // cartesian sRGB color space, while another is represented in the cylindrical
-// Oklch. Colors can be instantiated directly or be created with the [MakeColor]
+// Oklch. Colors can be instantiated directly or be created with the [Make]
 // helper. Additionally, the CSS 'color()' syntax is supported and can be parsed
-// by [ParseColor]. The package provides numerous color spaces, as variables of
-// type [ColorSpace].
+// by [Parse]. The package provides numerous color spaces, as variables of
+// type [Space].
 //
 // Colors can be freely converted between any two color spaces, with optional
 // gamut mapping. To convert a Color without gamut mapping, use [Color.Convert].
@@ -46,7 +46,7 @@
 // saturated than can be displayed by non-wide-gamut displays) using Oklch and
 // its conversion to sRGB with and without gamut mapping.
 //
-//	veryPink := MakeColor(Oklch, 0.65, 0.29, 0, 1)
+//	veryPink := Make(Oklch, 0.65, 0.29, 0, 1)
 //	veryPinkSRGB := veryPink.Convert(SRGB)
 //	pinkSRGB := GamutMapCSS(&veryPink, SRGB)
 //
@@ -70,8 +70,8 @@
 // as floating point values in the range [0, 1]), or a soft pink in Oklch.
 //
 // Package color supports numerous color spaces and allows users to define their
-// own. They are represented by the [ColorSpace] type. Color spaces include meta
-// data such as an ID (for the use with [ParseColor]) and name as well as a
+// own. They are represented by the [Space] type. Color spaces include meta
+// data such as an ID (for the use with [Parse]) and name as well as a
 // [white point]. However, their main functionality is provided by having a
 // "base" color space to and from which a color space can be converted. The base
 // space might be closely related, such as sRGB being based on linear sRGB (as
@@ -156,8 +156,8 @@ import (
 	"iter"
 )
 
-// MakeColor is a convenience function for initializing colors.
-func MakeColor(space *ColorSpace, p1, p2, p3, alpha float64) Color {
+// Make is a convenience function for initializing colors.
+func Make(space *Space, p1, p2, p3, alpha float64) Color {
 	if alpha < 0 {
 		alpha = 0
 	} else if alpha > 1 {
@@ -177,14 +177,14 @@ func lerp(x, y float64, a float64) float64 {
 // Step computes num colors that lie between c1 and c2, interpolating in the in
 // color space and returning them in the out color space, without applying any
 // gamut mapping.
-func Step(c1, c2 *Color, in, out *ColorSpace, num int) iter.Seq[Color] {
+func Step(c1, c2 *Color, in, out *Space, num int) iter.Seq[Color] {
 	return func(yield func(Color) bool) {
 		c1in := c1.Convert(in)
 		c2in := c2.Convert(in)
 
 		for i := range num {
 			t := float64(i+1) / float64(num)
-			c := MakeColor(
+			c := Make(
 				in,
 				lerp(c1in.Values[0], c2in.Values[0], t),
 				lerp(c1in.Values[1], c2in.Values[1], t),
@@ -229,7 +229,7 @@ func (chr *Chromaticity) XYZ() [3]float64 {
 // [Step], however, will interpolate between the start and end alpha values.
 type Color struct {
 	Values [3]float64
-	Space  *ColorSpace
+	Space  *Space
 	Alpha  float64
 }
 
@@ -257,7 +257,7 @@ func (c Color) String() string {
 
 // Convert converts c from its current color space to a different color space.
 // It does not apply any gamut mapping.
-func (c *Color) Convert(space *ColorSpace) Color {
+func (c *Color) Convert(space *Space) Color {
 	if c.Space == space {
 		return *c
 	}
@@ -275,7 +275,7 @@ func (c *Color) InGamut() bool {
 }
 
 // InGamutOf reports whether c, when converted to space, is in gamut.
-func (c *Color) InGamutOf(space *ColorSpace) bool {
+func (c *Color) InGamutOf(space *Space) bool {
 	cc := c.Convert(space)
 	return cc.InGamut()
 }
@@ -290,7 +290,7 @@ func (c *Color) InGamutOf(space *ColorSpace) bool {
 // [CSS gamut mapping algorithm]: https://www.w3.org/TR/css-color-4/#css-gamut-mapping
 // [1]: https://github.com/w3c/csswg-drafts/issues/7071
 // [2]: https://github.com/w3c/csswg-drafts/issues/9449
-func GamutMapCSS(c *Color, to *ColorSpace) Color {
+func GamutMapCSS(c *Color, to *Space) Color {
 	// 1. if destination has no gamut limits (XYZ-D65, XYZ-D50, Lab, LCH,
 	// Oklab, Oklch) convert origin to destination and return it as the
 	// gamut mapped color
@@ -302,11 +302,11 @@ func GamutMapCSS(c *Color, to *ColorSpace) Color {
 
 	cOklch := c.Convert(Oklch)
 	if cOklch.Values[0] >= 1 {
-		out := MakeColor(Oklab, 1, 0, 0, c.Alpha)
+		out := Make(Oklab, 1, 0, 0, c.Alpha)
 		return out.Convert(to)
 	}
 	if cOklch.Values[0] <= 0 {
-		out := MakeColor(Oklab, 0, 0, 0, c.Alpha)
+		out := Make(Oklab, 0, 0, 0, c.Alpha)
 		return out.Convert(to)
 	}
 

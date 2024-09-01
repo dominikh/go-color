@@ -12,13 +12,13 @@ var reColor = regexp.MustCompile(`^color\(` +
 	`((?:[+-]?\d+|[+-]?\d*\.\d+(?:[eE][+-]?\d+)?)%?)` +
 	`(?: / ((?:[+-]?\d+|[+-]?\d*\.\d+(?:[eE][+-]?\d+)?)%?))?\);?$`)
 
-// ParseColor parses colors in the CSS 'color()' format. The double dash for
+// Parse parses colors in the CSS 'color()' format. The double dash for
 // non-standard color spaces is optional.
 //
 // Example:
 //
-//	ParseColor("color(display-p3, 0.4, 30%, 0.2 / 1)")
-func ParseColor(s string) (Color, bool) {
+//	Parse("color(display-p3, 0.4, 30%, 0.2 / 1)")
+func Parse(s string) (Color, bool) {
 	m := reColor.FindStringSubmatch(s)
 	if m == nil {
 		return Color{}, false
@@ -33,9 +33,9 @@ func ParseColor(s string) (Color, bool) {
 	if space == "xyz" {
 		space = "xyz-d65"
 	}
-	cs, ok := LookupColorSpace(space)
+	cs, ok := LookupSpace(space)
 	if !ok {
-		return MakeColor(SRGB, 0, 0, 0, 1), false
+		return Make(SRGB, 0, 0, 0, 1), false
 	}
 
 	var values [4]float64
@@ -90,5 +90,5 @@ func ParseColor(s string) (Color, bool) {
 	parseValue(2, z)
 	parseValue(3, a)
 
-	return MakeColor(cs, values[0], values[1], values[2], values[3]), true
+	return Make(cs, values[0], values[1], values[2], values[3]), true
 }

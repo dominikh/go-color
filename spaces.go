@@ -9,64 +9,64 @@ import (
 )
 
 func init() {
-	RegisterColorSpace(XYZ_D50)
-	RegisterColorSpace(XYZ_D65)
-	RegisterColorSpace(LinearDisplayP3)
-	RegisterColorSpace(DisplayP3)
-	RegisterColorSpace(LinearSRGB)
-	RegisterColorSpace(SRGB)
-	RegisterColorSpace(Oklab)
-	RegisterColorSpace(Oklch)
-	RegisterColorSpace(ProPhoto)
-	RegisterColorSpace(LinearProPhoto)
-	RegisterColorSpace(Lab)
-	RegisterColorSpace(LCh)
+	RegisterSpace(XYZ_D50)
+	RegisterSpace(XYZ_D65)
+	RegisterSpace(LinearDisplayP3)
+	RegisterSpace(DisplayP3)
+	RegisterSpace(LinearSRGB)
+	RegisterSpace(SRGB)
+	RegisterSpace(Oklab)
+	RegisterSpace(Oklch)
+	RegisterSpace(ProPhoto)
+	RegisterSpace(LinearProPhoto)
+	RegisterSpace(Lab)
+	RegisterSpace(LCh)
 }
 
 var (
-	colorSpacesMu sync.RWMutex
-	colorSpaces   = map[string]*ColorSpace{}
+	spacesMu sync.RWMutex
+	spaces   = map[string]*Space{}
 
 	infty = [2]float64{math.Inf(-1), math.Inf(1)}
 	norm  = [2]float64{0, 1}
 )
 
-// LookupColorSpace looks up a registered (see [RegisterColorSpace]) color space by ID.
-func LookupColorSpace(id string) (*ColorSpace, bool) {
+// LookupSpace looks up a registered (see [RegisterSpace]) color space by ID.
+func LookupSpace(id string) (*Space, bool) {
 	id = strings.TrimPrefix(id, "--")
-	colorSpacesMu.RLock()
-	defer colorSpacesMu.RUnlock()
-	cs, ok := colorSpaces[id]
+	spacesMu.RLock()
+	defer spacesMu.RUnlock()
+	cs, ok := spaces[id]
 	return cs, ok
 }
 
-// RegisterColorSpace registers a color space. This allows it to be referenced
-// by ID in 'color()' expressions as parsed by [ParseColor] and looked up by
-// [LookupColorSpace].
+// RegisterSpace registers a color space. This allows it to be referenced
+// by ID in 'color()' expressions as parsed by [Parse] and looked up by
+// [LookupSpace].
 //
 // All color spaces provided by this package are automatically registered.
-func RegisterColorSpace(cs *ColorSpace) {
-	colorSpacesMu.Lock()
-	defer colorSpacesMu.Unlock()
-	registerColorSpace(cs)
+func RegisterSpace(cs *Space) {
+	spacesMu.Lock()
+	defer spacesMu.Unlock()
+	registerSpace(cs)
 }
 
-func registerColorSpace(cs *ColorSpace) {
-	if _, ok := colorSpaces[cs.ID]; ok {
+func registerSpace(cs *Space) {
+	if _, ok := spaces[cs.ID]; ok {
 		// Trying to register the same color space ID more than once might point
 		// to a mistake, but it might also be the result of us registering base
 		// spaces, so we can't panic here.
 		return
 	}
-	colorSpaces[cs.ID] = cs
+	spaces[cs.ID] = cs
 	if cs.Base != nil {
-		if _, ok := colorSpaces[cs.Base.ID]; !ok {
-			registerColorSpace(cs.Base)
+		if _, ok := spaces[cs.Base.ID]; !ok {
+			registerSpace(cs.Base)
 		}
 	}
 }
 
-// ColorSpace describes a color space, such as sRGB or HSV.
+// Space describes a color space, such as sRGB or HSV.
 //
 // Color spaces form a tree. Every space, except for [XYZ_D65], has a base space
 // and can be converted to and from it. Every space can be converted to any
@@ -82,21 +82,21 @@ func registerColorSpace(cs *ColorSpace) {
 // out. That is, simply changing the white point of an existing color space will
 // not have the intended effect.
 //
-// When creating new color spaces, you must call [ColorSpace.Init] once you're
+// When creating new color spaces, you must call [Space.Init] once you're
 // done.
-type ColorSpace struct {
+type Space struct {
 	ID       string
 	Name     string
 	White    *Chromaticity
-	Base     *ColorSpace
+	Base     *Space
 	Coords   [3]Coordinate
 	FromBase func(c *[3]float64) [3]float64
 	ToBase   func(c *[3]float64) [3]float64
 
-	path []*ColorSpace
+	path []*Space
 }
 
-func (cs *ColorSpace) Init() *ColorSpace {
+func (cs *Space) Init() *Space {
 	if cs.Coords == ([3]Coordinate{}) {
 		cs.Coords = cs.Base.Coords
 	}
@@ -127,7 +127,7 @@ func (cs *ColorSpace) Init() *ColorSpace {
 	// }
 
 	orig := cs
-	var out []*ColorSpace
+	var out []*Space
 	for cs != nil {
 		out = append(out, cs)
 		cs = cs.Base
@@ -137,7 +137,7 @@ func (cs *ColorSpace) Init() *ColorSpace {
 	return orig
 }
 
-func (cs *ColorSpace) InGamut(values [3]float64) bool {
+func (cs *Space) InGamut(values [3]float64) bool {
 	const ϵ = 0.000075
 	// if cs.GamutSpace != cs {
 	// 	values = cs.Convert(cs.GamutSpace, values)
@@ -157,7 +157,7 @@ func (cs *ColorSpace) InGamut(values [3]float64) bool {
 	return true
 }
 
-func (cs *ColorSpace) Convert(to *ColorSpace, coords [3]float64) [3]float64 {
+func (cs *Space) Convert(to *Space, coords [3]float64) [3]float64 {
 	ourPath := cs.path
 	theirPath := to.path
 
@@ -191,7 +191,7 @@ func (cs *ColorSpace) Convert(to *ColorSpace, coords [3]float64) [3]float64 {
 
 // NewXYZSpace returns a new CIE XYZ color space with the specified name, ID, and
 // white point.
-func NewXYZSpace(name, id string, white *Chromaticity) *ColorSpace {
+func NewXYZSpace(name, id string, white *Chromaticity) *Space {
 	// OPT(dh): because all white point conversions go through D65, converting
 	// between two non-D65 white points uses two instead of one matrix. For
 	// example, we'd do D50->D65->D75, instead of the more direct D50->D75. This
@@ -200,7 +200,7 @@ func NewXYZSpace(name, id string, white *Chromaticity) *ColorSpace {
 	// In practice, most color spaces use D65 or D50, anyway.
 	toD65 := Bradford.Matrix(white, XYZ_D65.White)
 	fromD65 := Bradford.Matrix(XYZ_D65.White, white)
-	return (&ColorSpace{
+	return (&Space{
 		ID:    id,
 		Name:  name,
 		White: white,
@@ -216,7 +216,7 @@ func NewXYZSpace(name, id string, white *Chromaticity) *ColorSpace {
 
 var XYZ_D50 = NewXYZSpace("XYZ D50", "xyz-d50", WhitesCSSD50)
 
-var XYZ_D65 = (&ColorSpace{
+var XYZ_D65 = (&Space{
 	ID:   "xyz-d65",
 	Name: "XYZ D65",
 	Coords: [3]Coordinate{
@@ -227,8 +227,8 @@ var XYZ_D65 = (&ColorSpace{
 	White: WhitesSRGBD65,
 }).Init()
 
-var LinearDisplayP3 = newRGBColorSpace(
-	&rgbColorSpace{
+var LinearDisplayP3 = newRGBSpace(
+	&rgbSpace{
 		ID:   "display-p3-linear",
 		Name: "Linear Display P3",
 		Base: XYZ_D65,
@@ -245,7 +245,7 @@ var LinearDisplayP3 = newRGBColorSpace(
 	},
 )
 
-var DisplayP3 = (&ColorSpace{
+var DisplayP3 = (&Space{
 	ID:   "display-p3",
 	Name: "Display P3",
 	Base: LinearDisplayP3,
@@ -254,8 +254,8 @@ var DisplayP3 = (&ColorSpace{
 	FromBase: SRGB.FromBase,
 }).Init()
 
-var LinearSRGB = newRGBColorSpace(
-	&rgbColorSpace{
+var LinearSRGB = newRGBSpace(
+	&rgbSpace{
 		ID:   "srgb-linear",
 		Name: "Linear sRGB",
 		Base: XYZ_D65,
@@ -274,16 +274,16 @@ var LinearSRGB = newRGBColorSpace(
 	},
 )
 
-type rgbColorSpace struct {
+type rgbSpace struct {
 	ID       string
 	Name     string
-	Base     *ColorSpace
+	Base     *Space
 	ToBase   [3][3]float64
 	FromBase [3][3]float64
 }
 
-func newRGBColorSpace(space *rgbColorSpace) *ColorSpace {
-	return (&ColorSpace{
+func newRGBSpace(space *rgbSpace) *Space {
+	return (&Space{
 		ID:     space.ID,
 		Name:   space.Name,
 		Coords: RGBCoordinates,
@@ -297,7 +297,7 @@ func newRGBColorSpace(space *rgbColorSpace) *ColorSpace {
 	}).Init()
 }
 
-var SRGB = (&ColorSpace{
+var SRGB = (&Space{
 	ID:   "srgb",
 	Name: "sRGB",
 	Base: LinearSRGB,
@@ -371,7 +371,7 @@ var (
 	}
 )
 
-var Oklab = (&ColorSpace{
+var Oklab = (&Space{
 	ID:   "oklab",
 	Name: "Oklab",
 	Coords: [3]Coordinate{
@@ -404,7 +404,7 @@ var Oklab = (&ColorSpace{
 	},
 }).Init()
 
-var Oklch = (&ColorSpace{
+var Oklch = (&Space{
 	ID:   "oklch",
 	Name: "Oklch",
 	Coords: [3]Coordinate{
@@ -419,7 +419,7 @@ var Oklch = (&ColorSpace{
 	ToBase: LCh.ToBase,
 }).Init()
 
-var Lab = (&ColorSpace{
+var Lab = (&Space{
 	ID:   "lab",
 	Name: "Lab",
 	Coords: [3]Coordinate{
@@ -497,7 +497,7 @@ var Lab = (&ColorSpace{
 	},
 }).Init()
 
-var LCh = (&ColorSpace{
+var LCh = (&Space{
 	ID:   "lch",
 	Name: "LCh",
 	Coords: [3]Coordinate{
@@ -537,8 +537,8 @@ func labToLCH(lab *[3]float64, ϵ float64) [3]float64 {
 	return [3]float64{l, c, h}
 }
 
-var LinearProPhoto = newRGBColorSpace(
-	&rgbColorSpace{
+var LinearProPhoto = newRGBSpace(
+	&rgbSpace{
 		ID:   "prophoto-rgb-linear",
 		Name: "Linear ProPhoto",
 		Base: XYZ_D50,
@@ -555,7 +555,7 @@ var LinearProPhoto = newRGBColorSpace(
 	},
 )
 
-var ProPhoto = (&ColorSpace{
+var ProPhoto = (&Space{
 	ID:     "prophoto-rgb",
 	Name:   "ProPhoto",
 	Base:   LinearProPhoto,

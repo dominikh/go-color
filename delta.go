@@ -10,7 +10,7 @@ import "math"
 // EJz
 
 // DeltaDistance computes the Euclidean distance in the provided color space.
-func DeltaDistance(reference, sample *Color, space *ColorSpace) float64 {
+func DeltaDistance(reference, sample *Color, space *Space) float64 {
 	ref := reference.Convert(space)
 	s := sample.Convert(space)
 	Δ0 := ref.Values[0] - s.Values[0]
