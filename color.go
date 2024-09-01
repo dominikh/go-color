@@ -14,7 +14,7 @@
 // The core type is [Color], a color space-aware type for representing colors in
 // any 3-axis coordinate system. For example, one color may be represented in a
 // cartesian sRGB color space, while another is represented in the cylindrical
-// Oklch. Colors can be instantiated directly or be created with the [Make]
+// Oklch. Colors can be instantiated directly or created with the [Make]
 // helper. Additionally, the CSS 'color()' syntax is supported and can be parsed
 // by [Parse]. The package provides numerous color spaces, as variables of
 // type [Space].
@@ -47,8 +47,8 @@
 // its conversion to sRGB with and without gamut mapping.
 //
 //	veryPink := Make(Oklch, 0.65, 0.29, 0, 1)
-//	veryPinkSRGB := veryPink.Convert(SRGB)
 //	pinkSRGB := GamutMapCSS(&veryPink, SRGB)
+//	veryPinkSRGB := veryPink.Convert(SRGB)
 //
 //	fmt.Println(veryPink, veryPink.InGamut())
 //	fmt.Println(veryPinkSRGB, veryPinkSRGB.InGamut())
@@ -71,7 +71,7 @@
 //
 // Package color supports numerous color spaces and allows users to define their
 // own. They are represented by the [Space] type. Color spaces include meta
-// data such as an ID (for the use with [Parse]) and name as well as a
+// data such as an ID (for use with [Parse]) and name as well as a
 // [white point]. However, their main functionality is provided by having a
 // "base" color space to and from which a color space can be converted. The base
 // space might be closely related, such as sRGB being based on linear sRGB (as
