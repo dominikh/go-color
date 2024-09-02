@@ -14,10 +14,6 @@ var reColor = regexp.MustCompile(`^color\(` +
 
 // Parse parses colors in the CSS 'color()' format. The double dash for
 // non-standard color spaces is optional.
-//
-// Example:
-//
-//	Parse("color(display-p3, 0.4, 30%, 0.2 / 1)")
 func Parse(s string) (Color, bool) {
 	m := reColor.FindStringSubmatch(s)
 	if m == nil {
