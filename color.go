@@ -178,12 +178,15 @@ func lerp(x, y float64, a float64) float64 {
 // color space and returning them in the out color space, without applying any
 // gamut mapping.
 func Step(c1, c2 *Color, in, out *Space, num int) iter.Seq[Color] {
+	if num < 2 {
+		panic("need at least two steps")
+	}
 	return func(yield func(Color) bool) {
 		c1in := c1.Convert(in)
 		c2in := c2.Convert(in)
 
 		for i := range num {
-			t := float64(i+1) / float64(num)
+			t := float64(i) / float64(num-1)
 			c := Make(
 				in,
 				lerp(c1in.Values[0], c2in.Values[0], t),
