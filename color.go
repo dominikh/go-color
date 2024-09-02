@@ -51,14 +51,14 @@
 //	veryPinkSRGB := veryPink.Convert(SRGB)
 //
 //	fmt.Println(veryPink, veryPink.InGamut())
-//	fmt.Println(veryPinkSRGB, veryPinkSRGB.InGamut())
 //	fmt.Println(pinkSRGB, pinkSRGB.InGamut())
+//	fmt.Println(veryPinkSRGB, veryPinkSRGB.InGamut())
 //
 // Output:
 //
 //	color(--oklch 0.650000 0.290000 0.000000) true
-//	color(srgb 1.040595 -0.191616 0.533106) false
 //	color(srgb 1.000000 0.000000 0.533824) true
+//	color(srgb 1.040595 -0.191616 0.533106) false
 //
 // This is everything that is needed to create and use colors. The following
 // sections describe more advanced but optional functionality.
