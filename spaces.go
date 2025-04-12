@@ -21,6 +21,8 @@ func init() {
 	RegisterSpace(LinearProPhoto)
 	RegisterSpace(Lab)
 	RegisterSpace(LCh)
+	RegisterSpace(LinearRec2020)
+	RegisterSpace(Rec2020)
 }
 
 var (
@@ -580,6 +582,63 @@ var ProPhoto = (&Space{
 				return math.Pow(v, (1.0 / 1.8))
 			} else {
 				return 16 * v
+			}
+		}
+		return [3]float64{
+			f(c[0]),
+			f(c[1]),
+			f(c[2]),
+		}
+	},
+}).Init()
+
+var LinearRec2020 = newRGBSpace(
+	&rgbSpace{
+		ID:   "rec2020-linear",
+		Name: "Linear Rec. 2020",
+		Base: XYZ_D65,
+		ToBase: [3][3]float64{
+			{6.36953507e-01, 1.44619185e-01, 1.68855854e-01},
+			{2.62698339e-01, 6.78008766e-01, 5.92928953e-02},
+			{4.99407097e-17, 2.80731358e-02, 1.06082723},
+		},
+		FromBase: [3][3]float64{
+			{1.71666343, -0.35567332, -0.25336809},
+			{-0.66667384, 1.61645574, 0.0157683},
+			{0.01764248, -0.04277698, 0.94224328},
+		},
+	},
+)
+
+var Rec2020 = (&Space{
+	ID:     "rec2020",
+	Name:   "Rec. 2020",
+	Base:   LinearRec2020,
+	Coords: RGBCoordinates,
+	ToBase: func(c *[3]float64) [3]float64 {
+		f := func(v float64) float64 {
+			const b = 0.018053968510807
+			const a = 1 + 5.5*b
+			if v < 4.5*b {
+				return v / 4.5
+			} else {
+				return math.Pow(((v + (a - 1)) / a), 1.0/0.45)
+			}
+		}
+		return [3]float64{
+			f(c[0]),
+			f(c[1]),
+			f(c[2]),
+		}
+	},
+	FromBase: func(c *[3]float64) [3]float64 {
+		f := func(v float64) float64 {
+			const b = 0.018053968510807
+			const a = 1 + 5.5*b
+			if v < b {
+				return 4.5 * v
+			} else {
+				return a*math.Pow(v, 0.45) - (a - 1)
 			}
 		}
 		return [3]float64{
