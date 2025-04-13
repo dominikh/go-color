@@ -23,6 +23,7 @@ func init() {
 	RegisterSpace(LCh)
 	RegisterSpace(LinearRec2020)
 	RegisterSpace(Rec2020)
+	RegisterSpace(Rec2100PQ)
 }
 
 var (
@@ -645,6 +646,51 @@ var Rec2020 = (&Space{
 			f(c[0]),
 			f(c[1]),
 			f(c[2]),
+		}
+	},
+}).Init()
+
+var Rec2100PQ = (&Space{
+	ID:     "rec2100-pq",
+	Name:   "Rec. 2100 PQ",
+	Base:   LinearRec2020,
+	Coords: RGBCoordinates,
+	ToBase: func(c *[3]float64) [3]float64 {
+		f := func(v float64) float64 {
+			const m1 = 2610.0 / 16384.0
+			const m2 = 128 * (2523.0 / 4096.0)
+			const c3 = 32 * (2392.0 / 4096.0)
+			const c2 = 32 * (2413.0 / 4096.0)
+			const c1 = c3 - c2 + 1
+
+			EtoM2Recip := math.Pow(v, 1.0/m2)
+			nom := max(EtoM2Recip-c1, 0)
+			denom := c2 - c3*EtoM2Recip
+			return 10_000 * math.Pow(nom/denom, 1.0/m1)
+		}
+
+		return [3]float64{
+			f(c[0]) / 203,
+			f(c[1]) / 203,
+			f(c[2]) / 203,
+		}
+	},
+	FromBase: func(c *[3]float64) [3]float64 {
+		f := func(v float64) float64 {
+			const m1 = 2610.0 / 16384.0
+			const m2 = 128 * (2523.0 / 4096.0)
+			const c3 = 32 * (2392.0 / 4096.0)
+			const c2 = 32 * (2413.0 / 4096.0)
+			const c1 = c3 - c2 + 1
+
+			Y := v / 10_000
+			YtoM1 := math.Pow(Y, m1)
+			return math.Pow((c1+c2*YtoM1)/(1+c3*YtoM1), m2)
+		}
+		return [3]float64{
+			f(c[0] * 203),
+			f(c[1] * 203),
+			f(c[2] * 203),
 		}
 	},
 }).Init()
