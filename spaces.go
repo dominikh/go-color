@@ -316,7 +316,7 @@ var SRGB = (&Space{
 			} else {
 				sign = 1.0
 			}
-			abs := ch * sign
+			abs := math.Abs(ch)
 
 			if abs > 0.0031308 {
 				return sign * (1.055*(math.Pow(abs, 1.0/2.4)) - 0.055)
@@ -565,10 +565,17 @@ var ProPhoto = (&Space{
 	Coords: RGBCoordinates,
 	ToBase: func(c *[3]float64) [3]float64 {
 		f := func(v float64) float64 {
-			if v < 16.0/512.0 {
+			var sign float64
+			if v < 0 {
+				sign = -1
+			} else {
+				sign = 1
+			}
+			abs := math.Abs(v)
+			if abs <= 16.0/512.0 {
 				return v / 16.0
 			} else {
-				return math.Pow(v, 1.8)
+				return sign * math.Pow(abs, 1.8)
 			}
 		}
 		return [3]float64{
@@ -579,8 +586,15 @@ var ProPhoto = (&Space{
 	},
 	FromBase: func(c *[3]float64) [3]float64 {
 		f := func(v float64) float64 {
-			if v >= 1.0/512.0 {
-				return math.Pow(v, (1.0 / 1.8))
+			var sign float64
+			if v < 0 {
+				sign = -1
+			} else {
+				sign = 1
+			}
+			abs := math.Abs(v)
+			if abs > 1.0/512.0 {
+				return sign * math.Pow(abs, 1.0/1.8)
 			} else {
 				return 16 * v
 			}
@@ -620,10 +634,17 @@ var Rec2020 = (&Space{
 		f := func(v float64) float64 {
 			const b = 0.018053968510807
 			const a = 1 + 5.5*b
-			if v < 4.5*b {
+			var sign float64
+			if v < 0 {
+				sign = -1
+			} else {
+				sign = 1
+			}
+			abs := math.Abs(v)
+			if abs < 4.5*b {
 				return v / 4.5
 			} else {
-				return math.Pow(((v + (a - 1)) / a), 1.0/0.45)
+				return sign * math.Pow(((abs+(a-1))/a), 1.0/0.45)
 			}
 		}
 		return [3]float64{
@@ -636,10 +657,17 @@ var Rec2020 = (&Space{
 		f := func(v float64) float64 {
 			const b = 0.018053968510807
 			const a = 1 + 5.5*b
-			if v < b {
+			var sign float64
+			if v < 0 {
+				sign = -1
+			} else {
+				sign = 1
+			}
+			abs := math.Abs(v)
+			if abs < b {
 				return 4.5 * v
 			} else {
-				return a*math.Pow(v, 0.45) - (a - 1)
+				return sign*a*math.Pow(abs, 0.45) - (a - 1)
 			}
 		}
 		return [3]float64{
