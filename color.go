@@ -210,7 +210,7 @@ type Chromaticity struct {
 
 // XYZ converts the xy chromaticity to the X, Y, and Z tristimulus values, with
 // Y = 1.
-func (chr *Chromaticity) XYZ() [3]float64 {
+func (chr Chromaticity) XYZ() [3]float64 {
 	return [3]float64{
 		chr.X / chr.Y,
 		1,
@@ -379,7 +379,7 @@ type Coordinate struct {
 	// Range describes the range of values that are in gamut. For some
 	// coordinates in some color spaces, this will be [-∞, ∞].
 	Range [2]float64
-	// Range describes the values that map to 0% and 100%. If not set, defaults
+	// RefRange describes the values that map to 0% and 100%. If not set, defaults
 	// to Range.
 	RefRange [2]float64
 	// IsAngle is true for coordinates that represent angles, such as color hue.

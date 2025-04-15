@@ -90,7 +90,7 @@ func registerSpace(cs *Space) {
 type Space struct {
 	ID       string
 	Name     string
-	White    *Chromaticity
+	White    Chromaticity
 	Base     *Space
 	Coords   [3]Coordinate
 	FromBase func(c *[3]float64) [3]float64
@@ -103,7 +103,7 @@ func (cs *Space) Init() *Space {
 	if cs.Coords == ([3]Coordinate{}) {
 		cs.Coords = cs.Base.Coords
 	}
-	if cs.White == nil && cs.Base != nil {
+	if cs.White == (Chromaticity{}) && cs.Base != nil {
 		cs.White = cs.Base.White
 	}
 
@@ -194,7 +194,7 @@ func (cs *Space) Convert(to *Space, coords [3]float64) [3]float64 {
 
 // NewXYZSpace returns a new CIE XYZ color space with the specified name, ID, and
 // white point.
-func NewXYZSpace(name, id string, white *Chromaticity) *Space {
+func NewXYZSpace(name, id string, white Chromaticity) *Space {
 	// OPT(dh): because all white point conversions go through D65, converting
 	// between two non-D65 white points uses two instead of one matrix. For
 	// example, we'd do D50->D65->D75, instead of the more direct D50->D75. This

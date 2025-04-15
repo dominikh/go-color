@@ -33,63 +33,63 @@ var (
 var (
 	// Standard illuminants for the CIE 1931 standard observer, from tables T.3,
 	// T.8, T.8.2, and T.9 in CIE 15:2004.
-	WhitesCIE2004TwoDegA      = &Chromaticity{0.44758, 040745}
-	WhitesCIE2004TwoDegC      = &Chromaticity{0.31006, 0.31616}
-	WhitesCIE2004TwoDegD50    = &Chromaticity{0.34567, 0.35851}
-	WhitesCIE2004TwoDegD55    = &Chromaticity{0.33243, 0.34744}
-	WhitesCIE2004TwoDegD65    = &Chromaticity{0.31272, 0.32903}
-	WhitesCIE2004TwoDegD75    = &Chromaticity{0.29903, 0.31488}
-	WhitesCIE2004TwoDegFL1    = &Chromaticity{0.3131, 0.3371}
-	WhitesCIE2004TwoDegFL2    = &Chromaticity{0.3721, 0.3751}
-	WhitesCIE2004TwoDegFL3    = &Chromaticity{0.4091, 0.3941}
-	WhitesCIE2004TwoDegFL3_1  = &Chromaticity{0.4407, 0.4033}
-	WhitesCIE2004TwoDegFL3_2  = &Chromaticity{0.3808, 0.3734}
-	WhitesCIE2004TwoDegFL3_3  = &Chromaticity{0.3153, 0.3439}
-	WhitesCIE2004TwoDegFL3_4  = &Chromaticity{0.4429, 0.4043}
-	WhitesCIE2004TwoDegFL3_5  = &Chromaticity{0.3749, 0.3672}
-	WhitesCIE2004TwoDegFL3_6  = &Chromaticity{0.3488, 0.36}
-	WhitesCIE2004TwoDegFL3_7  = &Chromaticity{0.4384, 0.4045}
-	WhitesCIE2004TwoDegFL3_8  = &Chromaticity{0.382, 0.3832}
-	WhitesCIE2004TwoDegFL3_9  = &Chromaticity{0.3499, 0.3591}
-	WhitesCIE2004TwoDegFL3_10 = &Chromaticity{0.3455, 0.356}
-	WhitesCIE2004TwoDegFL3_11 = &Chromaticity{0.3245, 0.3434}
-	WhitesCIE2004TwoDegFL3_12 = &Chromaticity{0.4377, 0.4037}
-	WhitesCIE2004TwoDegFL3_13 = &Chromaticity{0.383, 0.3724}
-	WhitesCIE2004TwoDegFL3_14 = &Chromaticity{0.3447, 0.3609}
-	WhitesCIE2004TwoDegFL3_15 = &Chromaticity{0.3127, 0.3288}
-	WhitesCIE2004TwoDegFL4    = &Chromaticity{0.4402, 0.4031}
-	WhitesCIE2004TwoDegFL5    = &Chromaticity{0.3138, 0.3452}
-	WhitesCIE2004TwoDegFL6    = &Chromaticity{0.3779, 0.3882}
-	WhitesCIE2004TwoDegFL7    = &Chromaticity{0.3129, 0.3292}
-	WhitesCIE2004TwoDegFL8    = &Chromaticity{0.3458, 0.3586}
-	WhitesCIE2004TwoDegFL9    = &Chromaticity{0.3741, 0.3727}
-	WhitesCIE2004TwoDegFL10   = &Chromaticity{0.3458, 0.3588}
-	WhitesCIE2004TwoDegFL11   = &Chromaticity{0.3805, 0.3769}
-	WhitesCIE2004TwoDegFL12   = &Chromaticity{0.4370, 0.4042}
-	WhitesCIE2004TwoDegHP1    = &Chromaticity{0.533, 0.415}
-	WhitesCIE2004TwoDegHP2    = &Chromaticity{0.4778, 0.4158}
-	WhitesCIE2004TwoDegHP3    = &Chromaticity{0.4302, 0.4075}
-	WhitesCIE2004TwoDegHP4    = &Chromaticity{0.3812, 0.3797}
-	WhitesCIE2004TwoDegHP5    = &Chromaticity{0.3776, 0.3713}
+	WhitesCIE2004TwoDegA      = Chromaticity{0.44758, 040745}
+	WhitesCIE2004TwoDegC      = Chromaticity{0.31006, 0.31616}
+	WhitesCIE2004TwoDegD50    = Chromaticity{0.34567, 0.35851}
+	WhitesCIE2004TwoDegD55    = Chromaticity{0.33243, 0.34744}
+	WhitesCIE2004TwoDegD65    = Chromaticity{0.31272, 0.32903}
+	WhitesCIE2004TwoDegD75    = Chromaticity{0.29903, 0.31488}
+	WhitesCIE2004TwoDegFL1    = Chromaticity{0.3131, 0.3371}
+	WhitesCIE2004TwoDegFL2    = Chromaticity{0.3721, 0.3751}
+	WhitesCIE2004TwoDegFL3    = Chromaticity{0.4091, 0.3941}
+	WhitesCIE2004TwoDegFL3_1  = Chromaticity{0.4407, 0.4033}
+	WhitesCIE2004TwoDegFL3_2  = Chromaticity{0.3808, 0.3734}
+	WhitesCIE2004TwoDegFL3_3  = Chromaticity{0.3153, 0.3439}
+	WhitesCIE2004TwoDegFL3_4  = Chromaticity{0.4429, 0.4043}
+	WhitesCIE2004TwoDegFL3_5  = Chromaticity{0.3749, 0.3672}
+	WhitesCIE2004TwoDegFL3_6  = Chromaticity{0.3488, 0.36}
+	WhitesCIE2004TwoDegFL3_7  = Chromaticity{0.4384, 0.4045}
+	WhitesCIE2004TwoDegFL3_8  = Chromaticity{0.382, 0.3832}
+	WhitesCIE2004TwoDegFL3_9  = Chromaticity{0.3499, 0.3591}
+	WhitesCIE2004TwoDegFL3_10 = Chromaticity{0.3455, 0.356}
+	WhitesCIE2004TwoDegFL3_11 = Chromaticity{0.3245, 0.3434}
+	WhitesCIE2004TwoDegFL3_12 = Chromaticity{0.4377, 0.4037}
+	WhitesCIE2004TwoDegFL3_13 = Chromaticity{0.383, 0.3724}
+	WhitesCIE2004TwoDegFL3_14 = Chromaticity{0.3447, 0.3609}
+	WhitesCIE2004TwoDegFL3_15 = Chromaticity{0.3127, 0.3288}
+	WhitesCIE2004TwoDegFL4    = Chromaticity{0.4402, 0.4031}
+	WhitesCIE2004TwoDegFL5    = Chromaticity{0.3138, 0.3452}
+	WhitesCIE2004TwoDegFL6    = Chromaticity{0.3779, 0.3882}
+	WhitesCIE2004TwoDegFL7    = Chromaticity{0.3129, 0.3292}
+	WhitesCIE2004TwoDegFL8    = Chromaticity{0.3458, 0.3586}
+	WhitesCIE2004TwoDegFL9    = Chromaticity{0.3741, 0.3727}
+	WhitesCIE2004TwoDegFL10   = Chromaticity{0.3458, 0.3588}
+	WhitesCIE2004TwoDegFL11   = Chromaticity{0.3805, 0.3769}
+	WhitesCIE2004TwoDegFL12   = Chromaticity{0.4370, 0.4042}
+	WhitesCIE2004TwoDegHP1    = Chromaticity{0.533, 0.415}
+	WhitesCIE2004TwoDegHP2    = Chromaticity{0.4778, 0.4158}
+	WhitesCIE2004TwoDegHP3    = Chromaticity{0.4302, 0.4075}
+	WhitesCIE2004TwoDegHP4    = Chromaticity{0.3812, 0.3797}
+	WhitesCIE2004TwoDegHP5    = Chromaticity{0.3776, 0.3713}
 
 	// Standard illuminants for the CIE 1964 standard observer, from table T.3
 	// in CIE 15:2004.
-	WhitesCIE2004TenDegA   = &Chromaticity{0.45117, 0.40594}
-	WhitesCIE2004TenDegC   = &Chromaticity{0.31039, 0.31905}
-	WhitesCIE2004TenDegD50 = &Chromaticity{0.34773, 0.35952}
-	WhitesCIE2004TenDegD55 = &Chromaticity{0.33412, 0.34877}
-	WhitesCIE2004TenDegD65 = &Chromaticity{0.31381, 0.33098}
-	WhitesCIE2004TenDegD75 = &Chromaticity{0.29968, 0.31740}
+	WhitesCIE2004TenDegA   = Chromaticity{0.45117, 0.40594}
+	WhitesCIE2004TenDegC   = Chromaticity{0.31039, 0.31905}
+	WhitesCIE2004TenDegD50 = Chromaticity{0.34773, 0.35952}
+	WhitesCIE2004TenDegD55 = Chromaticity{0.33412, 0.34877}
+	WhitesCIE2004TenDegD65 = Chromaticity{0.31381, 0.33098}
+	WhitesCIE2004TenDegD75 = Chromaticity{0.29968, 0.31740}
 
 	// The D50 white point as defined in [CSS Color Module Level 4]. This
 	// corresponds to [WhitesCIE2004TwoDegD50] but rounded to 4 digits.
 	//
 	// [CSS Color Module Level 4]: https://www.w3.org/TR/css-color-4/
-	WhitesCSSD50 = &Chromaticity{0.3457, 0.3585}
+	WhitesCSSD50 = Chromaticity{0.3457, 0.3585}
 
 	// The D65 white point as specified by sRGB. This corresponds to
 	// [WhitesCIE2004TwoDegD65] but rounded to 4 digits.
-	WhitesSRGBD65 = &Chromaticity{0.3127, 0.3290}
+	WhitesSRGBD65 = Chromaticity{0.3127, 0.3290}
 )
 
 // MakeCIEDaylightIlluminant computes a daylight illuminant at a nominal
@@ -134,12 +134,12 @@ type CAT struct {
 	FromCone [3][3]float64
 }
 
-func (cat *CAT) Adapt(xyz *[3]float64, src, dst *Chromaticity) [3]float64 {
+func (cat *CAT) Adapt(xyz *[3]float64, src, dst Chromaticity) [3]float64 {
 	m := cat.Matrix(src, dst)
 	return Adapt(xyz, &m)
 }
 
-func (cat *CAT) Matrix(src, dst *Chromaticity) [3][3]float64 {
+func (cat *CAT) Matrix(src, dst Chromaticity) [3][3]float64 {
 	ws := src.XYZ()
 	wd := dst.XYZ()
 
