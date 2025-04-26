@@ -300,15 +300,15 @@ func newRGBSpace(space *rgbSpace) *Space {
 	}).Init()
 }
 
+// SRGB is the sRGB color space. Conversion to sRGB uses the piece-wise OETF.
+// Conversion from sRGB uses the inverse of the piece-wise OETF. This is not the
+// same as the EOTF that is commonly used by consumer displays, which uses gamma
+// 2.2.
 var SRGB = (&Space{
 	ID:   "srgb",
 	Name: "sRGB",
 	Base: LinearSRGB,
 	FromBase: func(c *[3]float64) [3]float64 {
-		// TODO(dh): should this use the piecewise function, or a flat 2.2
-		// gamma? See discussion in
-		// https://gitlab.freedesktop.org/pq/color-and-hdr/-/issues/12
-
 		f := func(ch float64) float64 {
 			var sign float64
 			if ch < 0 {
@@ -327,7 +327,6 @@ var SRGB = (&Space{
 		return [3]float64{f(c[0]), f(c[1]), f(c[2])}
 	},
 	ToBase: func(c *[3]float64) [3]float64 {
-		// TODO(dh): same concern as FromBase
 		f := func(ch float64) float64 {
 			var sign float64
 			if ch < 0 {
