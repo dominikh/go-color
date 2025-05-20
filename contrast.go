@@ -8,12 +8,12 @@ package color
 // Weber
 // DeltaPhiStar
 
-func luminance(c *Color) float64 {
+func luminance(c Color) float64 {
 	return c.Convert(XYZ_D65).Values[1]
 }
 
 // ContrastWeber computes the Weber luminance contrast.
-func ContrastWeber(c1, c2 *Color) float64 {
+func ContrastWeber(c1, c2 Color) float64 {
 	y1 := max(luminance(c1), 0)
 	y2 := max(luminance(c2), 0)
 
@@ -32,7 +32,7 @@ func ContrastWeber(c1, c2 *Color) float64 {
 }
 
 // ContrastMichelson computes the Michelson contrast.
-func ContrastMichelson(c1, c2 *Color) float64 {
+func ContrastMichelson(c1, c2 Color) float64 {
 	y1 := max(luminance(c1), 0)
 	y2 := max(luminance(c2), 0)
 

@@ -47,7 +47,7 @@
 // its conversion to sRGB with and without gamut mapping.
 //
 //	veryPink := Make(Oklch, 0.65, 0.29, 0, 1)
-//	pinkSRGB := GamutMapCSS(&veryPink, SRGB)
+//	pinkSRGB := GamutMapCSS(veryPink, SRGB)
 //	veryPinkSRGB := veryPink.Convert(SRGB)
 //
 //	fmt.Println(veryPink, veryPink.InGamut())
@@ -177,7 +177,7 @@ func lerp(x, y float64, a float64) float64 {
 // Step computes num colors that lie between c1 and c2, interpolating in the in
 // color space and returning them in the out color space, without applying any
 // gamut mapping.
-func Step(c1, c2 *Color, in, out *Space, num int) iter.Seq[Color] {
+func Step(c1, c2 Color, in, out *Space, num int) iter.Seq[Color] {
 	if num < 2 {
 		panic("need at least two steps")
 	}
@@ -260,9 +260,9 @@ func (c Color) String() string {
 
 // Convert converts c from its current color space to a different color space.
 // It does not apply any gamut mapping.
-func (c *Color) Convert(space *Space) Color {
+func (c Color) Convert(space *Space) Color {
 	if c.Space == space {
-		return *c
+		return c
 	}
 
 	return Color{
@@ -273,14 +273,13 @@ func (c *Color) Convert(space *Space) Color {
 }
 
 // InGamut reports whether c's values are in gamut of its color space.
-func (c *Color) InGamut() bool {
+func (c Color) InGamut() bool {
 	return c.Space.InGamut(c.Values)
 }
 
 // InGamutOf reports whether c, when converted to space, is in gamut.
-func (c *Color) InGamutOf(space *Space) bool {
-	cc := c.Convert(space)
-	return cc.InGamut()
+func (c Color) InGamutOf(space *Space) bool {
+	return c.Convert(space).InGamut()
 }
 
 // GamutMapCSS uses the [CSS gamut mapping algorithm] to map individual colors
@@ -293,7 +292,7 @@ func (c *Color) InGamutOf(space *Space) bool {
 // [CSS gamut mapping algorithm]: https://www.w3.org/TR/css-color-4/#css-gamut-mapping
 // [1]: https://github.com/w3c/csswg-drafts/issues/7071
 // [2]: https://github.com/w3c/csswg-drafts/issues/9449
-func GamutMapCSS(c *Color, to *Space) Color {
+func GamutMapCSS(c Color, to *Space) Color {
 	// 1. if destination has no gamut limits (XYZ-D65, XYZ-D50, Lab, LCH,
 	// Oklab, Oklch) convert origin to destination and return it as the
 	// gamut mapped color
@@ -321,7 +320,7 @@ func GamutMapCSS(c *Color, to *Space) Color {
 	const jnd = 0.02
 	const ϵ = 0.0001
 
-	clip := func(cc *Color) Color {
+	clip := func(cc Color) Color {
 		clamp := func(f, low, high float64) float64 {
 			if f < low {
 				return low
@@ -339,8 +338,8 @@ func GamutMapCSS(c *Color, to *Space) Color {
 	}
 
 	current := cOklch
-	clipped := clip(&current)
-	e := DeltaEOK(&clipped, &current)
+	clipped := clip(current)
+	e := DeltaEOK(clipped, current)
 	if e < jnd {
 		return clipped
 	}
@@ -354,8 +353,8 @@ func GamutMapCSS(c *Color, to *Space) Color {
 			min = chroma
 			continue
 		} else if !current.InGamutOf(to) {
-			clipped = clip(&current)
-			e = DeltaEOK(&clipped, &current)
+			clipped = clip(current)
+			e = DeltaEOK(clipped, current)
 			if e < jnd {
 				if jnd-e < ϵ {
 					return clipped

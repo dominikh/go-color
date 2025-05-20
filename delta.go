@@ -10,7 +10,7 @@ import "math"
 // EJz
 
 // DeltaDistance computes the Euclidean distance in the provided color space.
-func DeltaDistance(reference, sample *Color, space *Space) float64 {
+func DeltaDistance(reference, sample Color, space *Space) float64 {
 	ref := reference.Convert(space)
 	s := sample.Convert(space)
 	Δ0 := ref.Values[0] - s.Values[0]
@@ -21,20 +21,20 @@ func DeltaDistance(reference, sample *Color, space *Space) float64 {
 
 // DeltaE76 computes the CIE 1976 color difference using the Euclidean distance
 // in the [Lab] color space.
-func DeltaE76(reference, sample *Color) float64 {
+func DeltaE76(reference, sample Color) float64 {
 	return DeltaDistance(reference, sample, Lab)
 }
 
 // DeltaEOK computes the color difference using the Euclidean distance in the
 // [Oklab] color space.
-func DeltaEOK(reference, sample *Color) float64 {
+func DeltaEOK(reference, sample Color) float64 {
 	return DeltaDistance(reference, sample, Oklab)
 }
 
 // DeltaEOK2 computes the color difference using the Euclidean distance in the
 // [Oklab] color space, with the a and b axes scaled by a factor of 2, for
 // better uniformity.
-func DeltaEOK2(reference, sample *Color) float64 {
+func DeltaEOK2(reference, sample Color) float64 {
 	// See
 	// https://github.com/w3c/csswg-drafts/issues/6642#issuecomment-945714988
 	// and

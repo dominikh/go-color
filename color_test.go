@@ -14,7 +14,7 @@ func TestStep(t *testing.T) {
 		for i := range want {
 			want[i] = float64(i) / 100
 		}
-		got := slices.Collect(Step(&c1, &c2, LinearSRGB, LinearSRGB, N))
+		got := slices.Collect(Step(c1, c2, LinearSRGB, LinearSRGB, N))
 		if len(got) != N {
 			t.Fatalf("got %d steps, want %d", len(got), N)
 		}
@@ -32,7 +32,7 @@ func TestStep(t *testing.T) {
 		c2 := Make(LinearSRGB, 1, 0, 0, 1)
 
 		for i := range 1000 {
-			got := slices.Collect(Step(&c1, &c2, LinearSRGB, LinearSRGB, i+2))
+			got := slices.Collect(Step(c1, c2, LinearSRGB, LinearSRGB, i+2))
 			if got[0] != c1 {
 				t.Fatalf("got first step %v, want %v", got[0], c1)
 			}
