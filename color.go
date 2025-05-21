@@ -164,9 +164,8 @@ func Make(space *Space, p1, p2, p3, alpha float64) Color {
 		alpha = 1
 	}
 	return Color{
-		Values: [3]float64{p1, p2, p3},
+		Values: [4]float64{p1, p2, p3, alpha},
 		Space:  space,
-		Alpha:  alpha,
 	}
 }
 
@@ -192,7 +191,7 @@ func Step(c1, c2 Color, in, out *Space, num int) iter.Seq[Color] {
 				lerp(c1in.Values[0], c2in.Values[0], t),
 				lerp(c1in.Values[1], c2in.Values[1], t),
 				lerp(c1in.Values[2], c2in.Values[2], t),
-				lerp(c1in.Alpha, c2in.Alpha, t),
+				lerp(c1in.Values[3], c2in.Values[3], t),
 			)
 			cout := c.Convert(out)
 			if !yield(cout) {
@@ -218,22 +217,20 @@ func (chr Chromaticity) XYZ() [3]float64 {
 	}
 }
 
-// Color represents a color with 3 coordinates in some color space. The meaning
-// of the values depends on the color space.
+// Color represents a color with 3 coordinates in some color space, plus an
+// alpha channel. The meaning of the first three values depends on the color
+// space. The alpha value does not affect operations such as color space
+// conversions, gamut mapping, or distance metrics and will simply be preserved.
+// [Step], however, will interpolate between the start and end alpha values.
+// Color values are not premultiplied by alpha.
 //
 // The values of a color may be out of gamut for the color space. This is
 // allowed so that conversions between color spaces do not lose any information,
 // even if the destination space is smaller than the source space. The package
 // provides functions for explicit gamut mapping.
-//
-// For convenience, colors include an alpha channel, commonly used for opacity
-// or coverage. The alpha value doesn't affect operations such as color space
-// conversions, gamut mapping, or distance metrics and will simply be preserved.
-// [Step], however, will interpolate between the start and end alpha values.
 type Color struct {
-	Values [3]float64
+	Values [4]float64
 	Space  *Space
-	Alpha  float64
 }
 
 func (c Color) String() string {
@@ -249,9 +246,9 @@ func (c Color) String() string {
 		id = "--" + id
 	}
 
-	if c.Alpha != 1 {
+	if c.Values[3] != 1 {
 		return fmt.Sprintf("color(%s %f %f %f / %f)",
-			id, c.Values[0], c.Values[1], c.Values[2], c.Alpha)
+			id, c.Values[0], c.Values[1], c.Values[2], c.Values[3])
 	} else {
 		return fmt.Sprintf("color(%s %f %f %f)",
 			id, c.Values[0], c.Values[1], c.Values[2])
@@ -265,16 +262,16 @@ func (c Color) Convert(space *Space) Color {
 		return c
 	}
 
+	v := c.Space.Convert(space, [3]float64(c.Values[:]))
 	return Color{
-		Values: c.Space.Convert(space, c.Values),
+		Values: [4]float64{v[0], v[1], v[2], c.Values[3]},
 		Space:  space,
-		Alpha:  c.Alpha,
 	}
 }
 
 // InGamut reports whether c's values are in gamut of its color space.
 func (c Color) InGamut() bool {
-	return c.Space.InGamut(c.Values)
+	return c.Space.InGamut([3]float64(c.Values[:]))
 }
 
 // InGamutOf reports whether c, when converted to space, is in gamut.
@@ -304,11 +301,11 @@ func GamutMapCSS(c Color, to *Space) Color {
 
 	cOklch := c.Convert(Oklch)
 	if cOklch.Values[0] >= 1 {
-		out := Make(Oklab, 1, 0, 0, c.Alpha)
+		out := Make(Oklab, 1, 0, 0, c.Values[3])
 		return out.Convert(to)
 	}
 	if cOklch.Values[0] <= 0 {
-		out := Make(Oklab, 0, 0, 0, c.Alpha)
+		out := Make(Oklab, 0, 0, 0, c.Values[3])
 		return out.Convert(to)
 	}
 
